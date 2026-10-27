@@ -1,0 +1,285 @@
+{
+  "run_id": "forge-3e40e34d2e8f",
+  "objective": "Design and verify a velocity-bounded 3D robotic trajectory controller with ISO 10218 torque & obstacle clearance guarantees.",
+  "task_type": "hybrid",
+  "requested_mode": "simulated",
+  "effective_mode": "simulated",
+  "is_estimated_telemetry": true,
+  "sim_version": "nemotron-forge-sim-v1.2",
+  "seed": 42,
+  "result_digest": "3e40e34d2e8f8602269e7fe2accfb4e749983d34c457bd24041fc5e3f0320a50",
+  "final_answer": "Completed multi-agent adjudication on Nebius Token Factory: AST & sandbox verification passed=True (2/2 tests), physical trajectory passed=True (score=0.96), kept 3 verified citations and filtered 1 unsupported claim(s).",
+  "generated_code": "def compute_safe_waypoint_step(\n    current_xyz: tuple[float, float, float],\n    target_xyz: tuple[float, float, float],\n    dt_sec: float,\n    max_velocity_mps: float = 1.5,\n) -> dict:\n    \"\"\"Computes a velocity-bounded 3D robotic step toward target_xyz.\"\"\"\n    if dt_sec <= 0:\n        raise ValueError(\"dt_sec must be positive\")\n    dx = target_xyz[0] - current_xyz[0]\n    dy = target_xyz[1] - current_xyz[1]\n    dz = target_xyz[2] - current_xyz[2]\n    dist = (dx * dx + dy * dy + dz * dz) ** 0.5\n    max_step = max_velocity_mps * dt_sec\n    scale = 1.0 if dist <= max_step or dist == 0.0 else (max_step / dist)\n    nx = round(current_xyz[0] + dx * scale, 6)\n    ny = round(current_xyz[1] + dy * scale, 6)\n    nz = round(current_xyz[2] + dz * scale, 6)\n    step_dist = ((nx - current_xyz[0]) ** 2 + (ny - current_xyz[1]) ** 2 + (nz - current_xyz[2]) ** 2) ** 0.5\n    vel = round(step_dist / dt_sec, 6)\n    return {\n        \"next_xyz\": (nx, ny, nz),\n        \"velocity_mps\": vel,\n        \"within_velocity_bound\": vel <= max_velocity_mps + 1e-6,\n    }\n",
+  "generated_tests": "def test_safe_waypoint_velocity_bound():\n    res = compute_safe_waypoint_step((0.0, 0.0, 0.25), (2.0, 2.0, 1.0), dt_sec=0.5, max_velocity_mps=1.5)\n    assert res[\"within_velocity_bound\"] is True\n    assert res[\"velocity_mps\"] <= 1.500001\n\ndef test_exact_target_reached_when_close():\n    res = compute_safe_waypoint_step((0.1, 0.1, 0.3), (0.2, 0.2, 0.4), dt_sec=0.5, max_velocity_mps=1.5)\n    assert res[\"next_xyz\"] == (0.2, 0.2, 0.4)\n    assert res[\"within_velocity_bound\"] is True\n\nif __name__ == \"__main__\":\n    test_safe_waypoint_velocity_bound()\n    test_exact_target_reached_when_close()\n    print(\"ALL_SANDBOX_TESTS_PASSED=2\")\n",
+  "stages": [
+    {
+      "stage_index": 1,
+      "stage_name": "01_fast_intent_and_query_router",
+      "tier_id": "FAST",
+      "requested_model_id": "nvidia/Llama-3_3-Nemotron-Super-49B-v1",
+      "served_model_id": "nvidia/Llama-3_3-Nemotron-Super-49B-v1",
+      "execution_mode": "simulated",
+      "is_estimated_telemetry": true,
+      "confidence": 0.94,
+      "escalated_to_deep": false,
+      "escalation_reason": null,
+      "prompt_tokens": 64,
+      "completion_tokens": 96,
+      "latency_ms": 340.0,
+      "estimated_cost_usd": 3.6e-05,
+      "summary": "Classified objective as 'hybrid' workflow. Synthesized 3 Tavily verification queries covering Nemotron-3 MoE routing, Nebius Token Factory OpenAI API, and ISO 10218 kinematic torque safety bounds.",
+      "degraded_reason": null
+    },
+    {
+      "stage_index": 2,
+      "stage_name": "03_mid_code_and_trajectory_synthesis",
+      "tier_id": "MID",
+      "requested_model_id": "nvidia/Llama-3_1-Nemotron-Ultra-253B-v1",
+      "served_model_id": "nvidia/Llama-3_1-Nemotron-Ultra-253B-v1",
+      "execution_mode": "simulated",
+      "is_estimated_telemetry": true,
+      "confidence": 0.91,
+      "escalated_to_deep": false,
+      "escalation_reason": null,
+      "prompt_tokens": 64,
+      "completion_tokens": 96,
+      "latency_ms": 920.0,
+      "estimated_cost_usd": 0.000211,
+      "summary": "Synthesized `compute_safe_waypoint_step` controller, 2 deterministic unit tests, and 5-waypoint 3D trajectory.",
+      "degraded_reason": null
+    },
+    {
+      "stage_index": 3,
+      "stage_name": "04_cosmos_physical_critic",
+      "tier_id": "PHYSICAL",
+      "requested_model_id": "nvidia/Cosmos-Reason1-7B",
+      "served_model_id": "nvidia/Cosmos-Reason1-7B",
+      "execution_mode": "simulated",
+      "is_estimated_telemetry": true,
+      "confidence": 0.95,
+      "escalated_to_deep": false,
+      "escalation_reason": null,
+      "prompt_tokens": 64,
+      "completion_tokens": 96,
+      "latency_ms": 780.0,
+      "estimated_cost_usd": 0.000141,
+      "summary": "NVIDIA Cosmos Reason1-7B verified 5-waypoint trajectory: peak velocity 0.506 m/s (<=1.50 m/s), peak acceleration 0.873 m/s2 (<=4.00 m/s2), min obstacle clearance 0.250 m (>=0.15 m), torque 22.43 Nm (<=45.0 Nm).",
+      "degraded_reason": null
+    },
+    {
+      "stage_index": 4,
+      "stage_name": "05_deep_adjudication_and_synthesis",
+      "tier_id": "DEEP",
+      "requested_model_id": "nvidia/Nemotron-3-Ultra",
+      "served_model_id": "nvidia/Nemotron-3-Ultra",
+      "execution_mode": "simulated",
+      "is_estimated_telemetry": true,
+      "confidence": 0.97,
+      "escalated_to_deep": false,
+      "escalation_reason": null,
+      "prompt_tokens": 64,
+      "completion_tokens": 96,
+      "latency_ms": 1650.0,
+      "estimated_cost_usd": 0.000422,
+      "summary": "Completed multi-agent adjudication on Nebius Token Factory: AST & sandbox verification passed=True (2/2 tests), physical trajectory passed=True (score=0.96), kept 3 verified citations and filtered 1 unsupported claim(s).",
+      "degraded_reason": null
+    }
+  ],
+  "citations": [
+    {
+      "citation_id": "CIT-01",
+      "claim_text": "NVIDIA Nemotron-3 open models Nano 30B, Super 120B, and Ultra provide hybrid Mamba-Transformer MoE reasoning for agentic coding and safety-critical verification workflows.",
+      "url": "https://developer.nvidia.com/nemotron",
+      "title": "NVIDIA Nemotron-3 Open Model Family & MoE Reasoning Architecture",
+      "status": "supported",
+      "overlap_score": 0.9474,
+      "supporting_passage": "NVIDIA Nemotron-3 open models including Nano 30B, Super 120B, and Ultra provide high-throughput hybrid Mamba-Transformer / MoE reasoning for agentic coding, tool calling, and safety-critical verification workflows deployed via OpenAI-compatible inference endpoints.",
+      "reason": "High lexical/technical token overlap (0.95 >= 0.65) with extracted passage.",
+      "execution_mode": "simulated"
+    },
+    {
+      "citation_id": "CIT-02",
+      "claim_text": "Nebius Token Factory exposes an OpenAI-compatible /v1/chat/completions endpoint supporting low-latency token streaming and model routing across NVIDIA Nemotron models.",
+      "url": "https://docs.nebius.com/studio/inference/quickstart",
+      "title": "Nebius Token Factory OpenAI-Compatible Inference API Documentation",
+      "status": "supported",
+      "overlap_score": 1.0,
+      "supporting_passage": "Nebius Token Factory exposes an OpenAI-compatible /v1/chat/completions endpoint at https://api.studio.nebius.ai/v1 supporting low-latency token streaming, model routing, and structured JSON tool invocation across open-weight NVIDIA Nemotron and Llama models.",
+      "reason": "High lexical/technical token overlap (1.00 >= 0.65) with extracted passage.",
+      "execution_mode": "simulated"
+    },
+    {
+      "citation_id": "CIT-03",
+      "claim_text": "Robotic trajectory planners must bound end-effector velocity below 1.5 m/s, linear acceleration below 4.0 m/s2, joint payload torque below 45.0 Nm, and maintain 0.15 m obstacle clearance.",
+      "url": "https://docs.nvidia.com/cosmos/latest/physical-ai-safety.html",
+      "title": "ISO 10218 / Collaborative Robotics Kinematic & Torque Safety Envelope Reference",
+      "status": "supported",
+      "overlap_score": 0.95,
+      "supporting_passage": "Robotic trajectory planners must bound end-effector velocity below 1.5 m/s, linear acceleration below 4.0 m/s2, joint payload torque below 45.0 Nm, and maintain a minimum 0.15 m obstacle clearance margin within workspace boundaries before physical actuator execution.",
+      "reason": "High lexical/technical token overlap (0.95 >= 0.65) with extracted passage.",
+      "execution_mode": "simulated"
+    }
+  ],
+  "omitted_claims": [
+    {
+      "citation_id": "CIT-04",
+      "claim_text": "Unverified speculative claim that robotic actuators require zero obstacle clearance and unlimited joint velocity during blind high-speed traversal.",
+      "url": "https://docs.nvidia.com/cosmos/latest/physical-ai-safety.html",
+      "title": "ISO 10218 / Collaborative Robotics Kinematic & Torque Safety Envelope Reference",
+      "status": "unsupported",
+      "overlap_score": 0.3125,
+      "supporting_passage": "Robotic trajectory planners must bound end-effector velocity below 1.5 m/s, linear acceleration below 4.0 m/s2, joint payload torque below 45.0 Nm, and maintain a minimum 0.15 m obstacle clearance margin within workspace boundaries before physical actuator execution.",
+      "reason": "Insufficient passage support (0.31 < 0.35); claim omitted from verified output.",
+      "execution_mode": "simulated"
+    }
+  ],
+  "code_verification": {
+    "passed": true,
+    "ast_safe": true,
+    "ast_violations": [],
+    "execution_attempted": true,
+    "execution_policy": "isolated_subprocess_rlimit",
+    "exit_code": 0,
+    "tests_run": 2,
+    "tests_passed": 2,
+    "stdout_excerpt": "ALL_SANDBOX_TESTS_PASSED=2",
+    "stderr_excerpt": "",
+    "duration_ms": 14.34
+  },
+  "physical_verification": {
+    "passed": true,
+    "plausibility_score": 0.96,
+    "max_velocity_mps": 0.534,
+    "velocity_limit_mps": 1.5,
+    "max_acceleration_mps2": 1.0681,
+    "acceleration_limit_mps2": 4.0,
+    "min_obstacle_clearance_m": 0.2632,
+    "clearance_limit_m": 0.15,
+    "workspace_bounds_ok": true,
+    "payload_torque_nm": 22.844,
+    "torque_limit_nm": 45.0,
+    "violations": [],
+    "waypoints": [
+      {
+        "t_sec": 0.0,
+        "x_m": 0.0,
+        "y_m": 0.0,
+        "z_m": 0.25,
+        "vx_mps": 0.0,
+        "vy_mps": 0.0,
+        "vz_mps": 0.0
+      },
+      {
+        "t_sec": 0.5,
+        "x_m": 0.18,
+        "y_m": 0.1,
+        "z_m": 0.42,
+        "vx_mps": 0.36,
+        "vy_mps": 0.2,
+        "vz_mps": 0.34
+      },
+      {
+        "t_sec": 1.0,
+        "x_m": 0.36,
+        "y_m": 0.05,
+        "z_m": 0.58,
+        "vx_mps": 0.36,
+        "vy_mps": -0.1,
+        "vz_mps": 0.32
+      },
+      {
+        "t_sec": 1.5,
+        "x_m": 0.55,
+        "y_m": 0.12,
+        "z_m": 0.64,
+        "vx_mps": 0.38,
+        "vy_mps": 0.14,
+        "vz_mps": 0.12
+      },
+      {
+        "t_sec": 2.0,
+        "x_m": 0.68,
+        "y_m": 0.22,
+        "z_m": 0.5,
+        "vx_mps": 0.26,
+        "vy_mps": 0.2,
+        "vz_mps": -0.28
+      }
+    ],
+    "cosmos_critic_summary": "NVIDIA Cosmos Reason1-7B verified 5-waypoint trajectory: peak velocity 0.506 m/s (<=1.50 m/s), peak acceleration 0.873 m/s2 (<=4.00 m/s2), min obstacle clearance 0.250 m (>=0.15 m), torque 22.43 Nm (<=45.0 Nm).",
+    "cosmos_execution_mode": "simulated"
+  },
+  "cost_summary": {
+    "total_prompt_tokens": 256,
+    "total_completion_tokens": 384,
+    "tiered_cost_usd": 0.00081,
+    "monolithic_deep_baseline_cost_usd": 0.00169,
+    "estimated_cost_savings_pct": 52.07,
+    "total_latency_ms": 3690.0,
+    "is_estimated_telemetry": true,
+    "telemetry_label": "ESTIMATED_SIMULATION_TELEMETRY"
+  },
+  "audit_verification": {
+    "chain_verified": true,
+    "hmac_verified": false,
+    "signature_Check_passed": true,
+    "hmac_configured": false,
+    "entry_count": 3,
+    "head_hash": "2c7b1778b10248d34c7496fe0f129bd53f2f50020a718f4e6ddfe18a63482d58",
+    "failed_seq": null
+  },
+  "audit_entries": [
+    {
+      "seq": 1,
+      "timestamp_utc": "2026-10-27T14:10:14.735381+00:00",
+      "stage_name": "01_fast_intent_and_query_router",
+      "action": "tier_routing_completed",
+      "execution_mode": "simulated",
+      "payload_redacted": {
+        "tier": "FAST",
+        "model": "nvidia/Llama-3_3-Nemotron-Super-49B-v1",
+        "confidence": 0.94
+      },
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "entry_hash": "8b93fabc11f5616e82b891f10531a60ec9ce3f0985a6f28eeb38b180f62a1ca0",
+      "hmac_signature": "d21245a245eb46dadf836e1e975427c83b24e20db71f42316072318b5c2595f9"
+    },
+    {
+      "seq": 2,
+      "timestamp_utc": "2026-10-27T14:10:14.735742+00:00",
+      "stage_name": "02_tavily_citation_verifier",
+      "action": "claims_verified",
+      "execution_mode": "simulated",
+      "payload_redacted": {
+        "kept_count": 3,
+        "omitted_unsupported_count": 1,
+        "statuses": {
+          "CIT-01": "supported",
+          "CIT-02": "supported",
+          "CIT-03": "supported",
+          "CIT-04": "unsupported"
+        }
+      },
+      "prev_hash": "8b93fabc11f5616e82b891f10531a60ec9ce3f0985a6f28eeb38b180f62a1ca0",
+      "entry_hash": "7ce722792509e3a101076d7be83d584b58640f9459f609e3251a213e88b22d5a",
+      "hmac_signature": "ba07c6e1331293ffab280b9d2c484c299622878dc396a72639d742a5bf77d343"
+    },
+    {
+      "seq": 3,
+      "timestamp_utc": "2026-10-27T14:10:14.750563+00:00",
+      "stage_name": "05_deep_adjudication_and_synthesis",
+      "action": "run_completed",
+      "execution_mode": "simulated",
+      "payload_redacted": {
+        "code_passed": true,
+        "physical_passed": true,
+        "escalated_to_deep": false,
+        "escalation_reason": null
+      },
+      "prev_hash": "7ce722792509e3a101076d7be83d584b58640f9459f609e3251a213e88b22d5a",
+      "entry_hash": "2c7b1778b10248d34c7496fe0f129bd53f2f50020a718f4e6ddfe18a63482d58",
+      "hmac_signature": "45ba2f908f174c5b21393dceaa6b023e81d8796280edd9d07b07f1589b90a45c"
+    }
+  ],
+  "created_at_jst": "2026-10-27T23:10:14+09:00"
+}

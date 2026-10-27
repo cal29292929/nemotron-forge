@@ -1,0 +1,42 @@
+{
+  "stage": "03_impl_sakura_kimi",
+  "hackathon": "02-nebius-nvidia",
+  "package": "nemotron_forge",
+  "endpoint": "https://api.ai.sakura.ad.jp/v1/chat/completions",
+  "primary_model": "preview/Kimi-K2.7-Code",
+  "started_at_jst": "2026-10-27T23:04:45+09:00",
+  "completed_at_jst": "2026-10-27T23:05:43+09:00",
+  "calls": [
+    {
+      "step": 1,
+      "completion_id": "chatcmpl-8da9d7e9365a7124",
+      "model_used": "preview/Kimi-K2.7-Code",
+      "usage": {
+        "prompt_tokens": 122,
+        "total_tokens": 3085,
+        "completion_tokens": 2963,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 1996
+        }
+      },
+      "chars": 4357
+    },
+    {
+      "step": 2,
+      "completion_id": "chatcmpl-a927c7f1da56fc56",
+      "model_used": "preview/Kimi-K2.7-Code",
+      "usage": {
+        "prompt_tokens": 107,
+        "total_tokens": 1358,
+        "completion_tokens": 1251,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 1026
+        }
+      },
+      "chars": 873
+    }
+  ],
+  "total_generated_chars": 5484
+}
